@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment & Inflation Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Investment & Inflation Calculator</h1>
+        
+        <div class="lg:grid lg:grid-cols-2 gap-8">
+            <!-- Input Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6 lg:mb-0">
+                <form id="calculatorForm" class="space-y-4 max-w-xl">
+                    <!-- Initial Savings / Investments -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="initialInvestment" class="flex items-center text-sm font-medium text-gray-700">
+                            Initial Savings / Investments
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="text" 
+                                   id="initialInvestment" 
+                                   name="initialInvestment"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="0.00"
+                                   value="0">
+                        </div>
+                    </div>
+
+                    <!-- Expected Yearly Growth Rate -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="expectedGrowthRate" class="flex items-center text-sm font-medium text-gray-700">
+                            Expected Yearly Growth Rate
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">%</span>
+                            </div>
+                            <input type="number" 
+                                   id="expectedGrowthRate" 
+                                   name="expectedGrowthRate"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="7.00"
+                                   min="-100"
+                                   max="100"
+                                   step="0.1"
+                                   value="7">
+                        </div>
+                    </div>
+
+                    <!-- Yearly Additional Deposits -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="annualDeposits" class="flex items-center text-sm font-medium text-gray-700">
+                            Yearly Additional Deposits
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="text" 
+                                   id="annualDeposits" 
+                                   name="annualDeposits"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="0.00"
+                                   value="0">
+                        </div>
+                    </div>
+
+                    <!-- Contribution Growth Rate -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="contributionGrowthRate" class="flex items-center text-sm font-medium text-gray-700">
+                            Contribution Growth Rate
+                            <span id="growthRateTooltip" class="ml-1 text-gray-400 hover:text-gray-500 cursor-pointer">?</span>
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">%</span>
+                            </div>
+                            <input type="number" 
+                                   id="contributionGrowthRate" 
+                                   name="contributionGrowthRate"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="3.00"
+                                   min="0"
+                                   max="20"
+                                   step="0.1"
+                                   value="3">
+                        </div>
+                    </div>
+
+                    <!-- Current Yearly Expenses -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="yearlyExpenses" class="flex items-center text-sm font-medium text-gray-700">
+                            Current Yearly Expenses
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="text" 
+                                   id="yearlyExpenses" 
+                                   name="yearlyExpenses"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="0.00"
+                                   value="0">
+                        </div>
+                    </div>
+
+                    <!-- Expected Inflation Rate -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="inflationRate" class="flex items-center text-sm font-medium text-gray-700">
+                            Expected Inflation Rate
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">%</span>
+                            </div>
+                            <input type="number" 
+                                   id="inflationRate" 
+                                   name="inflationRate"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="2.00"
+                                   min="-5"
+                                   max="20"
+                                   step="0.1"
+                                   value="2">
+                        </div>
+                    </div>
+
+                    <!-- Projection Timeline (Years) -->
+                    <div class="input-group grid grid-cols-1 gap-2">
+                        <label for="years" class="flex items-center text-sm font-medium text-gray-700">
+                            Projection Timeline (Years)
+                        </label>
+                        <div class="relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   id="years" 
+                                   name="years"
+                                   class="block w-full pl-7 pr-12 py-2 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="30"
+                                   min="1"
+                                   max="150"
+                                   step="1"
+                                   value="30">
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="button" 
+                                id="calculateButton"
+                                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors">
+                            Calculate
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <canvas id="investmentChart" style="height: 380px;"></canvas>
+            </div>
+
+            <!-- Key Metrics Section -->
+            <div class="lg:col-span-2 bg-white p-3 rounded-lg shadow-md mt-3">
+                <h2 class="text-base font-semibold mb-2">Key Metrics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2" id="keyMetrics">
+                    <!-- Metrics will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Contribution Growth Rate -->
+    <div id="growthRateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Contribution Growth Rate</h2>
+            <p>Adjusts your yearly savings amount to keep pace with future value of money.</p>
+            <p>Example: Starting at $20,000/year with 3% growth:</p>
+            <p>Year 1: $20,000</p>
+            <p>Year 10: $26,000</p>
+            <p>→ Helps maintain the real impact of your contributions over time.</p>
+        </div>
+    </div>
+
+    <script src="js/calculator.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Modal functionality
+        const tooltip = document.getElementById('growthRateTooltip');
+        const modal = document.getElementById('growthRateModal');
+        const closeModal = document.getElementById('closeModal');
+
+        tooltip.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html> 
