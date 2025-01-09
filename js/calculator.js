@@ -5,6 +5,18 @@ class InvestmentCalculator {
         this.cache = new Map();
     }
 
+    validateInputs(inputs) {
+        return {
+            initialInvestment: Math.max(0, parseFloat(inputs.initialInvestment) || 0),
+            expectedGrowthRate: Math.max(-100, Math.min(100, parseFloat(inputs.expectedGrowthRate) || 0)),
+            annualDeposits: Math.max(0, parseFloat(inputs.annualDeposits) || 0),
+            contributionGrowthRate: Math.max(0, Math.min(20, parseFloat(inputs.contributionGrowthRate) || 0)),
+            yearlyExpenses: Math.max(0, parseFloat(inputs.yearlyExpenses) || 0),
+            inflationRate: Math.max(-5, Math.min(20, parseFloat(inputs.inflationRate) || 0)),
+            years: Math.max(1, Math.min(150, parseInt(inputs.years) || 30))
+        };
+    }
+
     calculateProjection(inputs) {
         console.log('Calculating projection with inputs:', inputs);
         const cacheKey = JSON.stringify(inputs);
@@ -23,7 +35,7 @@ class InvestmentCalculator {
             years
         } = this.validateInputs(inputs);
 
-        let portfolioValue = initialInvestment;
+        let portfolioValue = initialInvestment + annualDeposits;
         let yearlyExpensesAdjusted = yearlyExpenses;
         let isPortfolioSustainable = true;
         let depletionYear = null;
@@ -83,18 +95,6 @@ class InvestmentCalculator {
         return data;
     }
 
-    validateInputs(inputs) {
-        return {
-            initialInvestment: Math.max(0, parseFloat(inputs.initialInvestment) || 0),
-            expectedGrowthRate: Math.max(-100, Math.min(100, parseFloat(inputs.expectedGrowthRate) || 0)),
-            annualDeposits: Math.max(0, parseFloat(inputs.annualDeposits) || 0),
-            contributionGrowthRate: Math.max(0, Math.min(20, parseFloat(inputs.contributionGrowthRate) || 0)),
-            yearlyExpenses: Math.max(0, parseFloat(inputs.yearlyExpenses) || 0),
-            inflationRate: Math.max(-5, Math.min(20, parseFloat(inputs.inflationRate) || 0)),
-            years: Math.max(1, Math.min(150, parseInt(inputs.years) || 30))
-        };
-    }
-
     debounce(func, wait) {
         clearTimeout(this.debounceTimeout);
         this.debounceTimeout = setTimeout(() => func(), wait);
@@ -103,4 +103,4 @@ class InvestmentCalculator {
     clearCache() {
         this.cache.clear();
     }
-} 
+}

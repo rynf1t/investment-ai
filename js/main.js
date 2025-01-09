@@ -1,109 +1,67 @@
 class App {
     constructor() {
-        console.log('Initializing App');
         this.calculator = new InvestmentCalculator();
         this.chart = new InvestmentChart();
-        this.chart.initialize();
-        
         this.form = document.getElementById('calculatorForm');
         this.metricsContainer = document.getElementById('keyMetrics');
         
-        this.setupEventListeners();
-        this.setupInputFormatting();
+        // Initialize chart after DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            this.chart.initialize();
+            this.setupEventListeners();
+            this.setupInputFormatting();
+        });
     }
 
     setupEventListeners() {
-        console.log('Setting up event listeners');
-        // Add calculate button event listener
         const calculateButton = document.getElementById('calculateButton');
         if (calculateButton) {
-            calculateButton.addEventListener('click', () => {
-                console.log('Calculate button clicked');
-                this.calculate();
-            });
-        } else {
-            console.error('Calculate button not found');
+            calculateButton.addEventListener('click', () => this.calculate());
         }
 
-        // Add input event listeners with console logging
-        const inputs = this.form.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('input', () => {
-                console.log('Input changed:', input.id, input.value);
-                this.calculator.debounce(() => {
-                    console.log('Debounced calculate call');
-                    this.calculate();
-                }, 300);
-            });
-
-            // Add enter key handler for each input
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    console.log('Enter key pressed on', input.id);
-                    this.calculate();
-                }
-            });
+        // Add enter key handler
+        this.form.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.calculate();
+            }
         });
     }
 
     setupInputFormatting() {
         const currencyInputs = ['initialInvestment', 'yearlyExpenses', 'annualDeposits'];
         const percentageInputs = ['inflationRate', 'expectedGrowthRate', 'contributionGrowthRate'];
-        
-        // Setup currency inputs
+
         currencyInputs.forEach(inputId => {
             const input = document.getElementById(inputId);
-            
-            // Format initial value
-            if (input.value) {
-                const value = parseFloat(input.value);
-                if (!isNaN(value)) {
-                    input.value = value.toLocaleString('en-US');
-                }
-            }
+            if (!input) return;
 
-            input.addEventListener('focus', (e) => {
-                // Remove commas when focusing
-                e.target.value = e.target.value.replace(/,/g, '');
+            input.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/[^\d.]/g, '');
+                e.target.value = value;
+                this.calculate();
             });
 
             input.addEventListener('blur', (e) => {
-                // Add commas when leaving the field
-                formatCurrencyInput(e.target);
-            });
-
-            // Prevent non-numeric input except for dot
-            input.addEventListener('keypress', (e) => {
-                const char = String.fromCharCode(e.which);
-                if (!/[0-9.]/.test(char)) {
-                    e.preventDefault();
-                }
+                this.formatCurrencyInput(e.target);
             });
         });
 
-        // Setup percentage inputs
         percentageInputs.forEach(inputId => {
             const input = document.getElementById(inputId);
+            if (!input) return;
+
             input.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                if (!isNaN(value)) {
-                    e.target.value = value;
-                }
+                let value = e.target.value.replace(/[^\d.-]/g, '');
+                e.target.value = value;
+                this.calculate();
             });
         });
+    }
 
-        // Helper function to format currency
-        function formatCurrencyInput(input) {
-            let value = input.value.replace(/,/g, '');
-            value = parseFloat(value);
-            
-            if (!isNaN(value)) {
-                input.value = value.toLocaleString('en-US');
-            } else {
-                input.value = '0';
-            }
-        }
+    formatCurrencyInput(input) {
+        let value = parseFloat(input.value.replace(/,/g, ''));
+        input.value = !isNaN(value) ? value.toLocaleString('en-US') : '0';
     }
 
     getInputs() {
@@ -120,18 +78,12 @@ class App {
 
     calculate() {
         try {
-            console.log('Starting calculation');
             const inputs = this.getInputs();
-            console.log('Inputs:', inputs);
-            
             const data = this.calculator.calculateProjection(inputs);
-            console.log('Calculation result:', data);
             
             if (data) {
                 this.chart.update(data, inputs.years);
                 this.updateMetrics(data);
-            } else {
-                console.warn('No data returned from calculateProjection');
             }
         } catch (error) {
             console.error('Calculation error:', error);
@@ -161,7 +113,7 @@ class App {
         ];
 
         this.metricsContainer.innerHTML = metrics.map(metric => `
-            <div class="p-4 bg-gray-50 rounded-lg">
+            <div class="p-4 bg-gray-50 rounded-lg shadow">
                 <p class="text-sm text-gray-600">${metric.label}</p>
                 <p class="mt-1 text-lg font-semibold text-gray-900">${metric.value}</p>
             </div>
@@ -169,7 +121,5 @@ class App {
     }
 }
 
-// Initialize the app when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new App();
-});
+// Initialize the app
+new App();
