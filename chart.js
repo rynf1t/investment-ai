@@ -1,11 +1,17 @@
 class InvestmentChart {
     constructor() {
+        console.log('Initializing InvestmentChart');
         this.chart = null;
-        const ctx = document.getElementById('investmentChart').getContext('2d');
-        this.ctx = ctx;
+        const canvas = document.getElementById('investmentChart');
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return;
+        }
+        this.ctx = canvas.getContext('2d');
     }
 
     initialize() {
+        console.log('Initializing chart');
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         
         this.chart = new Chart(this.ctx, {
@@ -15,51 +21,54 @@ class InvestmentChart {
                 datasets: [
                     {
                         label: 'Portfolio Balance',
-                        borderColor: 'rgba(59, 130, 246, 1)', // Tailwind blue-500
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // Tailwind blue-500 with opacity
+                        borderColor: 'rgb(59, 130, 246)',
                         borderWidth: 2,
-                        fill: true,
-                        tension: 0.4, // Smoother lines
+                        fill: false,
                         data: []
                     },
                     {
                         label: 'Yearly Expenses (Inflation Adjusted)',
-                        borderColor: 'rgba(239, 68, 68, 1)', // Tailwind red-500
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)', // Tailwind red-500 with opacity
+                        borderColor: 'rgb(239, 68, 68)',
                         borderWidth: 2,
-                        fill: true,
-                        tension: 0.4, // Smoother lines
+                        fill: false,
                         data: []
                     }
                 ]
             },
             options: {
-                maintainAspectRatio: false,
                 responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 8,
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 300
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 },
                 scales: {
                     y: {
+                        beginAtZero: true,
                         ticks: {
-                            font: {
-                                size: 11
-                            }
+                            callback: value => new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                                notation: 'compact',
+                                maximumFractionDigits: 1
+                            }).format(value)
                         }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 11
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                    maximumFractionDigits: 0
+                                }).format(context.raw);
+                                
+                                return `${context.dataset.label}: ${value}`;
                             }
                         }
                     }
@@ -69,6 +78,12 @@ class InvestmentChart {
     }
 
     update(data, years) {
+        if (!this.chart) {
+            console.error('Chart not initialized');
+            return;
+        }
+        
+        console.log('Updating chart with data:', data, 'and years:', years);
         requestAnimationFrame(() => {
             const labels = Array.from({length: years + 1}, (_, i) => `Year ${i}`);
             
@@ -83,4 +98,4 @@ class InvestmentChart {
             this.chart.update('none');
         });
     }
-} 
+}

@@ -1,12 +1,15 @@
 class InvestmentCalculator {
     constructor() {
+        console.log('Initializing InvestmentCalculator');
         this.debounceTimeout = null;
         this.cache = new Map();
     }
 
     calculateProjection(inputs) {
+        console.log('Calculating projection with inputs:', inputs);
         const cacheKey = JSON.stringify(inputs);
         if (this.cache.has(cacheKey)) {
+            console.log('Using cached data');
             return this.cache.get(cacheKey);
         }
 
@@ -94,7 +97,7 @@ class InvestmentCalculator {
 
     debounce(func, wait) {
         clearTimeout(this.debounceTimeout);
-        this.debounceTimeout = setTimeout(func, wait);
+        this.debounceTimeout = setTimeout(() => func(), wait);
     }
 
     clearCache() {
