@@ -1,4 +1,4 @@
-This is a simple investment and inflation calculator. 
+This is a simple investment and inflation calculator: https://rynf1t.github.io/investment-ai/
 
 It considers the following:
 - Initial savings / investments
@@ -8,3 +8,4 @@ It considers the following:
 - Current yearly expenses
 
 It is built with Tailwind CSS and JavaScript almost entirely with cursor.
+
